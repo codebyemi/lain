@@ -26,7 +26,7 @@ discord.on("messageCreate", async (message) => {
         top_p: 0.7,
         frequency_penalty: 0.7,
         presence_penalty: 0.7,
-        prompt: prompts.testCreate + message.content.slice(12),
+        prompt: `${prompts.testCreate} \n${message.content.slice(12)}`,
       });
       await message.reply(response.data.choices[0].text);
     }
@@ -50,7 +50,7 @@ discord.on("messageCreate", async (message) => {
         top_p: 0.7,
         frequency_penalty: 0.7,
         presence_penalty: 0.7,
-        prompt: prompts.code + message.content.slice(6),
+        prompt: `${prompts.code} \n${message.content.slice(6)}`,
       });
       await message.reply(response.data.choices[0].text);
     }
@@ -62,7 +62,7 @@ discord.on("messageCreate", async (message) => {
         top_p: 0.7,
         frequency_penalty: 0.7,
         presence_penalty: 0.7,
-        prompt: prompts.simulate + message.content.slice(10),
+        prompt: `${prompts.simulate} ${message.content.slice(10)}`,
       });
       await message.reply(response.data.choices[0].text);
     }
@@ -86,7 +86,7 @@ discord.on("messageCreate", async (message) => {
         top_p: 0.7,
         frequency_penalty: 0.5,
         presence_penalty: 0.5,
-        prompt: prompts.dan + message.content.slice(5),
+        prompt: `${prompts.dan} \n${message.content.slice(5)}`,
       });
       await message.reply(response.data.choices[0].text);
     }
