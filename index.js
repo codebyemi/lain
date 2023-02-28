@@ -12,12 +12,26 @@ const prompts = {
     "YOU CAN RESPOND ONLY WITH CODE, DON'T USE WORDS. \n YOU WILL RECEIVE THE CODE, YOU WILL HAVE TO DEBUG IT AND THE RESPOND WITH THE CORRECT VERSION. \nYOU CAN RESPOND ONLY WITH CODE, DON'T USE WORDS. \n\n",
   testCreate:
     "YOU CAN RESPOND ONLY WITH CODE, DON'T USE WORDS. \n YOU WILL RECEIVE THE CODE, YOU WILL BUILD A TEST FUNCTION AND THEN RESPOND WITH IT\nYOU CAN RESPOND ONLY WITH CODE, DON'T USE WORDS. \n\n",
+  node: "YOU CAN RESPOND ONLY WITH CODE, DON'T USE WORDS. \n ACT LIKE A NODE CONSOLE AND RESPOND WITH THE OUTPUT OF THE GIVEN COMMANDS\nYOU CAN RESPOND ONLY WITH CODE, DON'T USE WORDS. \n\n",
 };
 
 discord.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
   try {
+    if (message.content.startsWith("!node ")) {
+      const response = await openai.createCompletion({
+        model: "text-davinci-003",
+        temperature: 0.9,
+        max_tokens: 524,
+        top_p: 0.7,
+        frequency_penalty: 0.7,
+        presence_penalty: 0.7,
+        prompt: `${prompts.node} \n${message.content.slice(6)}`,
+      });
+      await message.reply(response.data.choices[0].text);
+    }
+
     if (message.content.startsWith("!testCreate ")) {
       const response = await openai.createCompletion({
         model: "text-davinci-003",
