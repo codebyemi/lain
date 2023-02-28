@@ -1,6 +1,7 @@
 const dotenv = require("dotenv");
 dotenv.config();
 const { openai, discord } = require("./config.js");
+const ytdl = require("ytdl-core");
 
 const prompts = {
   help: "\n\n!ask: Ask ChatGPT a question\n\n!dan: Ask ChatGPT without limitations\n\n!simulate [character]: Ask ChatGPT to act like a character\n\n!code: Use the codex model to ask ChatGPT to act like a top software engineer\n\n!debug [code]: Receive your code debugged\n\n!testCreate [code]: Receive a test function for your code \n\n",
@@ -31,7 +32,6 @@ discord.on("messageCreate", async (message) => {
       });
       await message.reply(response.data.choices[0].text);
     }
-
     if (message.content.startsWith("!testCreate ")) {
       const response = await openai.createCompletion({
         model: "text-davinci-003",
@@ -106,6 +106,43 @@ discord.on("messageCreate", async (message) => {
     }
     if (message.content.startsWith("!help")) {
       await message.reply(prompts.help);
+    }
+
+    const args = message.content.slice(prefix.length).trim().split(/ +/);
+    const command = args.shift().toLowerCase();
+
+    if (command === "play") {
+      // Check if user is in a voice channel
+      if (!message.member.voice.channel) {
+        return message.channel.send(
+          "You need to be in a voice channel to play music!"
+        );
+      }
+
+      // Check if bot has permission to join and speak in the voice channel
+      const permissions = message.member.voice.channel.permissionsFor(
+        message.client.user
+      );
+      if (!permissions.has("CONNECT") || !permissions.has("SPEAK")) {
+        return message.channel.send(
+          "I need permission to join and speak in your voice channel!"
+        );
+      }
+
+      // Get the song info
+      const songInfo = await ytdl.getInfo(args[0]);
+      const song = {
+        title: songInfo.videoDetails.title,
+        url: songInfo.videoDetails.video_url,
+      };
+
+      // Join the voice channel and play the song
+      const connection = await message.member.voice.channel.join();
+      const dispatcher = connection.play(
+        ytdl(song.url, { filter: "audioonly" })
+      );
+
+      message.channel.send(`Now playing: ${song.title}`);
     }
   } catch (error) {
     console.error(error);
