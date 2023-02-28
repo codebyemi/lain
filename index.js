@@ -17,8 +17,6 @@ const prompts = {
 discord.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
-  console.log(message.content.slice(4));
-
   try {
     if (message.content.startsWith("!testCreate ")) {
       const response = await openai.createCompletion({
@@ -42,6 +40,7 @@ discord.on("messageCreate", async (message) => {
         presence_penalty: 0.7,
         prompt: prompts.debug + message.content.slice(7),
       });
+      console.log(response);
       await message.reply(response.data.choices[0].text);
     }
     if (message.content.startsWith("!code ")) {
