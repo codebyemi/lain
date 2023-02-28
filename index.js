@@ -9,6 +9,11 @@ discord.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
   try {
+    if (message.content.startsWith("!help")) {
+      await message.reply(
+        "\n!ask [prompt] - Ask ChatGPT a question\n!dan [prompt] - Ask ChatGPT a question as a DAN\n"
+      );
+    }
     if (message.content.startsWith("!ask ")) {
       const response = await openai.createCompletion({
         model: "text-davinci-003",
