@@ -25,6 +25,7 @@ const prompts = [
       "YOU CAN RESPOND ONLY WITH CODE, DON'T USE WORDS. \n YOU WILL RECEIVE THE CODE, YOU WILL BUILD A TEST FUNCTION AND THEN RESPOND WITH IT\nYOU CAN RESPOND ONLY WITH CODE, DON'T USE WORDS. \n\n",
   },
 ];
+
 discord.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
@@ -89,7 +90,7 @@ discord.on("messageCreate", async (message) => {
       });
       await message.reply(response.data.choices[0].text);
     }
-    if (message.content.startsWith("!dan")) {
+    if (message.content.startsWith("!dan ")) {
       const response = await openai.createCompletion({
         model: "text-davinci-003",
         temperature: 0.9,
@@ -101,7 +102,7 @@ discord.on("messageCreate", async (message) => {
       });
       await message.reply(response.data.choices[0].text);
     }
-    if (message.content.startsWith("!help")) {
+    if (message.content.startsWith("!help ")) {
       await message.reply(prompts.help);
     }
   } catch (error) {
