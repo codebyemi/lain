@@ -1,7 +1,15 @@
 const dotenv = require("dotenv");
 dotenv.config();
 const { openai, discord } = require("./config.js");
+const {
+  joinVoiceChannel,
+  createAudioPlayer,
+  createAudioResource,
+} = require("@discordjs/voice");
 const ytdl = require("ytdl-core");
+let YouTubeNode = require("youtube-node");
+var youTube = new YouTubeNode();
+youTube.setKey(process.env.YOUTUBE_API_KEY);
 
 const prompts = {
   help: "\n\n!ask: Ask ChatGPT a question\n\n!dan: Ask ChatGPT without limitations\n\n!simulate [character]: Ask ChatGPT to act like a character\n\n!code: Use the codex model to ask ChatGPT to act like a top software engineer\n\n!debug [code]: Receive your code debugged\n\n!testCreate [code]: Receive a test function for your code \n\n",
@@ -18,6 +26,12 @@ const prompts = {
 
 discord.on("messageCreate", async (message) => {
   if (message.author.bot) return;
+  const command = message.content.split(" ")[0];
+  const args = message.content
+    .split(" ")
+    .slice(1)
+    .toString()
+    .replace(/,/g, " ");
 
   try {
     if (message.content.startsWith("!node ")) {
@@ -107,11 +121,7 @@ discord.on("messageCreate", async (message) => {
     if (message.content.startsWith("!help")) {
       await message.reply(prompts.help);
     }
-
-    const args = message.content.slice(prefix.length).trim().split(/ +/);
-    const command = args.shift().toLowerCase();
-
-    if (command === "play") {
+    if (command === "play" || command === "/play" || command === "!play") {
       // Check if user is in a voice channel
       if (!message.member.voice.channel) {
         return message.channel.send(
@@ -129,20 +139,37 @@ discord.on("messageCreate", async (message) => {
         );
       }
 
-      // Get the song info
-      const songInfo = await ytdl.getInfo(args[0]);
-      const song = {
-        title: songInfo.videoDetails.title,
-        url: songInfo.videoDetails.video_url,
-      };
+      youTube.search(args, 2, async function (error, result) {
+        if (error) {
+          console.log(error);
+        } else {
+          const videoTitle = result.items[0].snippet.title;
+          const videoUrl =
+            "https://www.youtube.com/watch?v=" + result.items[0].id.videoId;
 
-      // Join the voice channel and play the song
-      const connection = await message.member.voice.channel.join();
-      const dispatcher = connection.play(
-        ytdl(song.url, { filter: "audioonly" })
-      );
+          const audioPlayer = createAudioPlayer();
+          const audioResource = createAudioResource(
+            ytdl(videoUrl, { filter: "audioonly", quality: "highestaudio" })
+          );
+          audioPlayer.play(audioResource);
 
-      message.channel.send(`Now playing: ${song.title}`);
+          // Join the voice channel and play the song
+          joinVoiceChannel({
+            channelId: message.member.voice.channel.id,
+            guildId: message.guild.id,
+            adapterCreator: message.guild.voiceAdapterCreator,
+          });
+
+          // Subscribe the audio player to the voice connection
+          const subscription = joinVoiceChannel({
+            channelId: message.member.voice.channel.id,
+            guildId: message.guild.id,
+            adapterCreator: message.guild.voiceAdapterCreator,
+          }).subscribe(audioPlayer);
+
+          message.channel.send(`Now playing: ${videoTitle}`);
+        }
+      });
     }
   } catch (error) {
     console.error(error);
