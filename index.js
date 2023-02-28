@@ -38,9 +38,8 @@ discord.on("messageCreate", async (message) => {
         top_p: 0.7,
         frequency_penalty: 0.7,
         presence_penalty: 0.7,
-        prompt: `${prompts.debug} + ${message.content.slice(7)}`,
+        prompt: message.content.slice(7),
       });
-      console.log(response);
       await message.reply(response.data.choices[0].text);
     }
     if (message.content.startsWith("!code ")) {
