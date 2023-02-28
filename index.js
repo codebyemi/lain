@@ -11,7 +11,7 @@ discord.on("messageCreate", async (message) => {
   try {
     if (message.content.startsWith("!help")) {
       await message.reply(
-        "\n!ask [prompt] - Ask ChatGPT a question\n!dan [prompt] - Ask ChatGPT a question as a DAN\n"
+        "\n!help - Show this message\n!ask [prompt] - Ask ChatGPT a question\n!dan [prompt] - Ask ChatGPT a question as a DAN\n"
       );
     }
     if (message.content.startsWith("!ask ")) {
