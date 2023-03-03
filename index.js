@@ -6,7 +6,7 @@ const {
   discord,
   youtube,
   prompts,
-} = require("./config.js");
+} = require("./services.js");
 
 discord.on("messageCreate", async (message) => {
   if (message.author.bot) return;
