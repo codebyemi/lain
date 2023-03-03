@@ -26,6 +26,21 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
+const messageConfig = async (
+  prompt,
+  max_tokens = 1500,
+  model = "text-davinci-003",
+  temperature = 0.9
+) => ({
+  prompt,
+  model,
+  temperature,
+  max_tokens,
+  top_p: 0.7,
+  frequency_penalty: 0.7,
+  presence_penalty: 0.7,
+});
+
 //YouTube API
 const youtubeNode = new YouTubeNode();
 youtubeNode.setKey(process.env.YOUTUBE_API_KEY);
@@ -47,34 +62,30 @@ const youtube = async (message) => {
     );
   }
 
-  youtubeNode.search(
-    message.content.slice(6),
-    2,
-    async function (error, result) {
-      if (error) {
-        console.log(error);
-      } else {
-        const title = result.items[0].snippet.title;
-        const url =
-          "https://www.youtube.com/watch?v=" + result.items[0].id.videoId;
+  youtubeNode.search(message, 2, async function (error, result) {
+    if (error) {
+      console.log(error);
+    } else {
+      const title = result.items[0].snippet.title;
+      const url =
+        "https://www.youtube.com/watch?v=" + result.items[0].id.videoId;
 
-        const audioPlayer = createAudioPlayer();
-        const audioResource = createAudioResource(
-          ytdl(url, { filter: "audioonly", quality: "highestaudio" })
-        );
-        audioPlayer.play(audioResource);
+      const audioPlayer = createAudioPlayer();
+      const audioResource = createAudioResource(
+        ytdl(url, { filter: "audioonly", quality: "highestaudio" })
+      );
+      audioPlayer.play(audioResource);
 
-        // Subscribe the audio player to the voice connection
-        joinVoiceChannel({
-          channelId: message.member.voice.channel.id,
-          guildId: message.guild.id,
-          adapterCreator: message.guild.voiceAdapterCreator,
-        }).subscribe(audioPlayer);
+      // Subscribe the audio player to the voice connection
+      joinVoiceChannel({
+        channelId: message.member.voice.channel.id,
+        guildId: message.guild.id,
+        adapterCreator: message.guild.voiceAdapterCreator,
+      }).subscribe(audioPlayer);
 
-        message.channel.send(`Now playing: ${title}`);
-      }
+      message.channel.send(`Now playing: ${title}`);
     }
-  );
+  });
 
   // Join the voice channel and play the song
   joinVoiceChannel({
@@ -97,4 +108,4 @@ const prompts = {
   node: "YOU CAN RESPOND ONLY WITH CODE, DON'T USE WORDS. \n ACT LIKE A NODE CONSOLE AND RESPOND WITH THE OUTPUT OF THE GIVEN COMMANDS\nYOU CAN RESPOND ONLY WITH CODE, DON'T USE WORDS. \n\n",
 };
 
-module.exports = { openai, discord, youtube, prompts };
+module.exports = { openai, messageConfig, discord, youtube, prompts };
